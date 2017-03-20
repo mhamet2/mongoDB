@@ -12,7 +12,7 @@ my $pipe2;
 my $pipe3;
 my @pipe;
 
-$ENV{PATH}  = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'; 
+$ENV{PATH}  = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin';
 $CONFIG =read_config();
 our $VERSION = '0.01';
 
@@ -47,17 +47,17 @@ my $unlock_shard = "db.fsyncUnlock()";
 
 sub OpenMongoPipe{
 
- foreach (@_){ 
+ foreach (@_){
   my @test;
   open $test[$_], '|-','mongo','--host',$CONFIG->{HOST} ,'--port', $_ , or die "cannot pipe from mongo :$!";
   push @pipe, $test[$_];
   do_log("Opened pipe successfully to  $CONFIG->{HOST} on port $_ \n");
- } 
+ }
 }
 
 sub CloseMongoPipes{
  foreach (@pipe){
-  close ($_); 
+  close ($_);
   do_log("Closed pipe successfully to  $CONFIG->{HOST} on port $_ \n");
  }
 }
@@ -103,7 +103,7 @@ sub GetBalancerState{
 
 sub StopBalancing{
 
- my $stopbalancing = `$stop_balancing`;	
+ my $stopbalancing = `$stop_balancing`;
  if (GetBalancerState() ne "false"){
   $ERROR = "Unable to stop balancing";
  }
@@ -120,12 +120,12 @@ sub StartBalancing{
  }
  else{
  do_log("Balancing started\n");
- } 
+ }
 }
 
 sub DoBackupFS
 {
-    my @data = localtime(); 
+    my @data = localtime();
     $today_backup = sprintf "mongodb_backup_%04d%02d%02d_%02d_%02d", $data[5]+1900,$data[4]+1,$data[3],$data[2],$data[1];
     my $start_backup = "tar cfp " .  "$CONFIG->{PBACK}" . "/" . "$today_backup.tar  $CONFIG->{PMOUNT}";
     my $startbackup=`$start_backup`;
@@ -186,8 +186,8 @@ sub CompressBackup
  if (-s "$CONFIG->{PBACK}/$today_backup" . ".tar.gz") {
     do_log ("Compressed successfully $CONFIG->{PBACK}/$today_backup.tar\n");
  }
- else{     
-    $ERROR = "Error compressing $CONFIG->{PBACK}/$today_backup.tar"; 
+ else{
+    $ERROR = "Error compressing $CONFIG->{PBACK}/$today_backup.tar";
  }
 }
 
@@ -241,10 +241,10 @@ sub do_log
 sub ApplyRetention
 {
       do_log("Applying retention. Deleting $CONFIG->{PBACK}/mongodb_backup_*_* older than $CONFIG->{RETENTION} day\n");
-      system "find $CONFIG->{PBACK}/ -name \"mongodb_backup_*_*.gz\" -mtime +$CONFIG->{RETENTION} -exec rm  {} \\;";
+      system "find $CONFIG->{PBACK}/ -maxdepth 1 -name \"mongodb_backup_*_*.gz\" -mtime +$CONFIG->{RETENTION} -exec rm  {} \\;";
       if ($? != 0) {
         $ERROR="Failed deleting old backups $? $!";
-      }  
+      }
 
 }
 
